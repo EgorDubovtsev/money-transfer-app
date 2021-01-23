@@ -7,7 +7,7 @@ public class Account implements Serializable {
     private int id;
     private String username;
     private Long balance;
-    private final ReentrantLock reentrantLock = new ReentrantLock();
+    private final ReentrantLock reentrantLock = new ReentrantLock(true);
 
 
     public int getId() {
@@ -27,13 +27,21 @@ public class Account implements Serializable {
     }
 
     public Long getBalance() {
+        reentrantLock.lock();
         return balance;
     }
 
     public void setBalance(Long balance) {
+//        reentrantLock.lock();
         this.balance = balance;
+//        reentrantLock.unlock();
     }
-
+    public void lock(){
+        reentrantLock.lock();
+    }
+    public void unlock(){
+        reentrantLock.unlock();
+    }
     public ReentrantLock getReentrantLock() {
         return reentrantLock;
     }

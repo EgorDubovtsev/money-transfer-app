@@ -1,37 +1,46 @@
 package org.bank.service;
 
+import org.bank.dao.AccountDao;
 import org.bank.entity.Account;
 import org.bank.exception.InsufficientFundsException;
 import org.slf4j.Logger;
 
+import java.util.List;
+
 public class SimpleAccountService implements AccountService {
     private Logger logger;
+    private AccountDao accountDao;
 
-    public SimpleAccountService(Logger logger) {
+    public SimpleAccountService(Logger logger, AccountDao accountDao) {
         this.logger = logger;
+        this.accountDao = accountDao;
     }
 
-    public void transfer(Account accountFrom, Account accountTo, long amount) throws InsufficientFundsException, InterruptedException {
-        if (accountFrom.getReentrantLock().isLocked() || accountTo.getReentrantLock().isLocked()){
-            logger.warn("SOMETHING LOCKED");
-        }
-        logger.info("TRANSACTION FROM {} TO {}, AMOUNT:{}",accountFrom.getId(),accountTo.getId(),amount);
-        accountFrom.getReentrantLock().lock();
-        accountTo.getReentrantLock().lock();
-        if (accountFrom.getReentrantLock().isLocked() || accountTo.getReentrantLock().isLocked()){
-            logger.warn("LOOOOOCK AFTER METHOD");
-        }
+    @Override
+    public void transfer(Account accountFrom, Account accountTo, long amount) throws InsufficientFundsException {
+        logger.info("TRANSACTION FROM {} TO {}, AMOUNT:{}", accountFrom.getId(), accountTo.getId(), amount);
         if (accountFrom.getBalance() < amount) {
-            accountFrom.getReentrantLock().unlock();
-            accountTo.getReentrantLock().unlock();
             throw new InsufficientFundsException("Incorrect amount");
         }
-        logger.debug("(from) ID: {} old balance is {} ",accountFrom.getId(),accountFrom.getBalance());
+        accountFrom.lock();
+        accountTo.lock();
         accountFrom.setBalance(accountFrom.getBalance() - amount);
         accountTo.setBalance(accountTo.getBalance() + amount);
-        logger.debug("(from) ID: {} NEW balance is {} ",accountFrom.getId(),accountFrom.getBalance());
+        accountFrom.unlock();
+        accountTo.unlock();
 
-        accountFrom.getReentrantLock().unlock();
-        accountTo.getReentrantLock().unlock();
+        logger.debug(" {} new balance {} ", accountFrom.getId(), accountFrom.getBalance());
+        logger.debug(" {} new balance {} ", accountTo.getId(), accountTo.getBalance());
+
+    }
+
+    @Override
+    public Account getAccountFromListById(List<Account> accounts, int id) {
+        return accounts.stream().filter(account -> account.getId() == id).findFirst().orElse(null);//todo: create exept
+    }
+
+    @Override
+    public void saveAccount(Account account) {
+        accountDao.saveAccountData(account);
     }
 }

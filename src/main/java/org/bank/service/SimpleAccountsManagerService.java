@@ -26,7 +26,7 @@ public class SimpleAccountsManagerService implements AccountsManagerService {
     @Override
     public List<Account> getAllAccounts() throws AccountDeserializeException {
         List<Account> accountList = new ArrayList<>();
-        int i = 1;
+        int i = 0;
         Path pathToNextAccount;
         Long summaryBalance = 0L;
 
@@ -53,6 +53,11 @@ public class SimpleAccountsManagerService implements AccountsManagerService {
 
             accountDao.saveAccountData(account);
         }
+    }
+
+    @Override
+    public void saveAllAccounts(List<Account> accountList) {
+        accountList.forEach(account -> accountDao.saveAccountData(account));
     }
 
 }

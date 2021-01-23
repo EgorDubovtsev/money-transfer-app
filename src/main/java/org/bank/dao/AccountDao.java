@@ -9,7 +9,6 @@ import java.nio.file.Paths;
 
 public class AccountDao {
     private Path accountsFolder;
-
     public Path getAccountsFolder() {
         return accountsFolder;
     }
@@ -21,7 +20,8 @@ public class AccountDao {
     public Account getAccountById(int id) throws AccountDeserializeException {
         Path pathToAccountFile = Paths.get(accountsFolder.toString(), String.valueOf(id));
         try (
-                ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(pathToAccountFile.toFile()))) {
+                ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(pathToAccountFile.toFile()))
+        ) {
             return (Account) objectInputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();

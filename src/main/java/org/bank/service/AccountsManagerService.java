@@ -9,4 +9,5 @@ public interface AccountsManagerService {
     List<Account> getAllAccounts() throws AccountDeserializeException;
 
     void createAccountFiles(int count);
+    void saveAllAccounts(List<Account> accountList);
 }

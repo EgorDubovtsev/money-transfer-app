@@ -6,19 +6,20 @@ import org.bank.exception.AccountDeserializeException;
 import org.bank.exception.InsufficientFundsException;
 import org.bank.service.AccountService;
 
+import java.util.List;
 import java.util.Random;
 
 public class UserThread extends Thread {
     private AccountService accountService;
-    private int totalCountOfAccounts;
     private Random random;
     private AccountDao accountDao;
     private int operationsInEachThread = 1;
+    private List<Account> accounts;
 
-    public UserThread(String name, AccountService accountService, int totalCountOfAccounts, Random random, AccountDao accountDao) {
+    public UserThread(String name, AccountService accountService, List<Account> accounts, Random random, AccountDao accountDao) {
         super(name);
         this.accountService = accountService;
-        this.totalCountOfAccounts = totalCountOfAccounts;
+        this.accounts = accounts;
         this.random = random;
         this.accountDao = accountDao;
     }
@@ -32,15 +33,15 @@ public class UserThread extends Thread {
     }
 
     @Override
-    public void run() {
+    public void run() {//todo locks in each acc, find deadlock problem
         try {
-            for (int i=0; i < operationsInEachThread; i++) {
-                Account accountFrom = accountDao.getAccountById(random.nextInt(totalCountOfAccounts));
-                Account accountTo = accountDao.getAccountById(random.nextInt(totalCountOfAccounts));
+            for (int i = 0; i < operationsInEachThread; i++) {
+                Account accountFrom = accountService.getAccountFromListById(accounts, random.nextInt(accounts.size()));
+                Account accountTo = accountService.getAccountFromListById(accounts, random.nextInt(accounts.size()));
                 accountService.transfer(accountFrom, accountTo, random.nextInt(100));
             }
 
-        } catch (AccountDeserializeException | InsufficientFundsException e) {
+        } catch (InsufficientFundsException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
