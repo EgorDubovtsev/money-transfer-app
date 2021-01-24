@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Random;
 
 public class ExecutionService {
-    private static final int NUMBER_OF_THREAD = 20;//TODO: CHANGE ME
+    private static final int NUMBER_OF_THREAD = 20;
     private static final int NUMBER_OF_OPERATIONS_IN_EACH_THREAD = 50;
     private static final int TOTAL_COUNT_OF_ACCOUNTS = 10;
     private List<UserThread> threads = new ArrayList<>();
@@ -52,6 +52,11 @@ public class ExecutionService {
                     e.printStackTrace();
                 }
                 break;
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }

@@ -27,14 +27,11 @@ public class Account implements Serializable {
     }
 
     public Long getBalance() {
-        reentrantLock.lock();
         return balance;
     }
 
     public void setBalance(Long balance) {
-//        reentrantLock.lock();
         this.balance = balance;
-//        reentrantLock.unlock();
     }
     public void lock(){
         reentrantLock.lock();
