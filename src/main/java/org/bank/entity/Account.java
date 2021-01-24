@@ -33,12 +33,15 @@ public class Account implements Serializable {
     public void setBalance(Long balance) {
         this.balance = balance;
     }
-    public void lock(){
+
+    public void lock() {
         reentrantLock.lock();
     }
-    public void unlock(){
+
+    public void unlock() {
         reentrantLock.unlock();
     }
+
     public ReentrantLock getReentrantLock() {
         return reentrantLock;
     }

@@ -2,6 +2,7 @@ package org.bank.service;
 
 import org.bank.dao.AccountDao;
 import org.bank.entity.Account;
+import org.bank.exception.AccountNotExist;
 import org.bank.exception.InsufficientFundsException;
 import org.slf4j.Logger;
 
@@ -24,19 +25,21 @@ public class SimpleAccountService implements AccountService {
         }
         accountFrom.lock();
         accountTo.lock();
+
         accountFrom.setBalance(accountFrom.getBalance() - amount);
         accountTo.setBalance(accountTo.getBalance() + amount);
+
         accountFrom.unlock();
         accountTo.unlock();
 
-        logger.debug(" {} new balance {} ", accountFrom.getId(), accountFrom.getBalance());
-        logger.debug(" {} new balance {} ", accountTo.getId(), accountTo.getBalance());
+        logger.debug(" {} new balance: {} ", accountFrom.getId(), accountFrom.getBalance());
+        logger.debug(" {} new balance: {} ", accountTo.getId(), accountTo.getBalance());
 
     }
 
     @Override
-    public Account getAccountFromListById(List<Account> accounts, int id) {
-        return accounts.stream().filter(account -> account.getId() == id).findFirst().orElse(null);//todo: create exept
+    public Account getAccountFromListById(List<Account> accounts, int id) throws AccountNotExist {
+        return accounts.stream().filter(account -> account.getId() == id).findFirst().orElseThrow(AccountNotExist::new);
     }
 
     @Override

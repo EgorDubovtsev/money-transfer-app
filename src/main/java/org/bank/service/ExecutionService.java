@@ -17,16 +17,16 @@ public class ExecutionService {
     private static final int NUMBER_OF_THREAD = 20;
     private static final int NUMBER_OF_OPERATIONS_IN_EACH_THREAD = 50;
     private static final int TOTAL_COUNT_OF_ACCOUNTS = 10;
-    private List<UserThread> threads = new ArrayList<>();
+    private final List<UserThread> threads = new ArrayList<>();
 
     public void startThreads() {
-        Logger logger = LoggerFactory.getLogger(ExecutionService.class);
-        Random random = new Random();
         Path pathToAccountsDir = Paths.get("src/main/resources/accounts");
         AccountDao accountDao = new AccountDao(pathToAccountsDir);
+        Logger logger = LoggerFactory.getLogger(ExecutionService.class);
         AccountService accountService = new SimpleAccountService(logger, accountDao);
-        List<Account> accounts = new ArrayList<>();
+        Random random = new Random();
         AccountsManagerService accountsManagerService = new SimpleAccountsManagerService(logger, accountDao, random);
+        List<Account> accounts = new ArrayList<>();
         accountsManagerService.createAccountFiles(TOTAL_COUNT_OF_ACCOUNTS);
 
         try {
@@ -34,28 +34,31 @@ public class ExecutionService {
         } catch (AccountDeserializeException e) {
             e.printStackTrace();
         }
+
         for (int i = 0; i < NUMBER_OF_THREAD; i++) {
             UserThread userThread = new UserThread("user thread " + i,
-                    accountService, accounts,
-                    random, accountDao);
+                    accountService, accounts, random);
             threads.add(userThread);
             userThread.setOperationsInEachThread(NUMBER_OF_OPERATIONS_IN_EACH_THREAD);
             userThread.start();
         }
+
         while (Thread.currentThread().isAlive()) {
-            if (threads.stream().noneMatch(Thread::isAlive)) {
-                try {
+            try {
+                if (threads.stream().noneMatch(Thread::isAlive)) {
+
                     accountsManagerService.saveAllAccounts(accounts);
                     accountsManagerService.getAllAccounts();
 
-                } catch (AccountDeserializeException e) {
-                    e.printStackTrace();
+                    break;
                 }
-                break;
-            }
-            try {
+
                 Thread.sleep(500);
+
+            } catch (AccountDeserializeException e) {
+                e.printStackTrace();
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 e.printStackTrace();
             }
         }

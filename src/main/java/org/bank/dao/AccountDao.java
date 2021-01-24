@@ -19,6 +19,7 @@ public class AccountDao {
 
     public Account getAccountById(int id) throws AccountDeserializeException {
         Path pathToAccountFile = Paths.get(accountsFolder.toString(), String.valueOf(id));
+
         try (
                 ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(pathToAccountFile.toFile()))
         ) {
@@ -26,6 +27,7 @@ public class AccountDao {
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+
         throw new AccountDeserializeException("Account can not be deserialized");
     }
 
