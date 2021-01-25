@@ -4,23 +4,21 @@ import org.bank.dao.AccountDao;
 import org.bank.entity.Account;
 import org.bank.exception.AccountDeserializeException;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SimpleAccountsManagerService implements AccountsManagerService {
-    private Logger logger;
-    private AccountDao accountDao;
-    private Random random;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleAccountsManagerService.class);
+    private final AccountDao accountDao;
 
-    public SimpleAccountsManagerService(Logger logger, AccountDao accountDao, Random random) {
-        this.logger = logger;
+    public SimpleAccountsManagerService(AccountDao accountDao) {
         this.accountDao = accountDao;
-        this.random = random;
     }
 
     @Override
@@ -34,11 +32,11 @@ public class SimpleAccountsManagerService implements AccountsManagerService {
             Account account = accountDao.getAccountById(i);
             accountList.add(account);
             pathToNextAccount = Paths.get(accountDao.getAccountsFolder().toString(), String.valueOf(++i));
-            logger.info("User id:{} username:{} balance:{}", account.getId(), account.getUsername(), account.getBalance());
+            LOGGER.info("User id:{} username:{} balance:{}", account.getId(), account.getUsername(), account.getBalance());
             summaryBalance += account.getBalance();
 
         } while (Files.exists(pathToNextAccount));
-        logger.info("SUMMARY BALANCE: {}", summaryBalance);
+        LOGGER.info("SUMMARY BALANCE: {}", summaryBalance);
 
         return accountList;
     }
@@ -49,7 +47,7 @@ public class SimpleAccountsManagerService implements AccountsManagerService {
             Account account = new Account();
             account.setId(i);
             account.setUsername("USER");
-            account.setBalance((long) random.nextInt(10000));
+            account.setBalance((long) ThreadLocalRandom.current().nextInt(10_000));
 
             accountDao.saveAccountData(account);
         }
@@ -57,7 +55,7 @@ public class SimpleAccountsManagerService implements AccountsManagerService {
 
     @Override
     public void saveAllAccounts(List<Account> accountList) {
-        accountList.forEach(account -> accountDao.saveAccountData(account));
+        accountList.forEach(accountDao::saveAccountData);
     }
 
 }

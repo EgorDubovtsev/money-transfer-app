@@ -4,28 +4,23 @@ import org.bank.UserThread;
 import org.bank.dao.AccountDao;
 import org.bank.entity.Account;
 import org.bank.exception.AccountDeserializeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class ExecutionService {
     private static final int NUMBER_OF_THREAD = 20;
     private static final int NUMBER_OF_OPERATIONS_IN_EACH_THREAD = 50;
     private static final int TOTAL_COUNT_OF_ACCOUNTS = 10;
+    private static final Path PATH_TO_ACCOUNTS_DIR = Paths.get("src/main/resources/accounts");
     private final List<UserThread> threads = new ArrayList<>();
+    private static final AccountDao ACCOUNT_DAO = new AccountDao(PATH_TO_ACCOUNTS_DIR);
+    private final AccountService accountService = new SimpleAccountService(ACCOUNT_DAO);
+    private final AccountsManagerService accountsManagerService = new SimpleAccountsManagerService(ACCOUNT_DAO);
 
     public void startThreads() {
-        Path pathToAccountsDir = Paths.get("src/main/resources/accounts");
-        AccountDao accountDao = new AccountDao(pathToAccountsDir);
-        Logger logger = LoggerFactory.getLogger(ExecutionService.class);
-        AccountService accountService = new SimpleAccountService(logger, accountDao);
-        Random random = new Random();
-        AccountsManagerService accountsManagerService = new SimpleAccountsManagerService(logger, accountDao, random);
         List<Account> accounts = new ArrayList<>();
         accountsManagerService.createAccountFiles(TOTAL_COUNT_OF_ACCOUNTS);
 
@@ -37,7 +32,7 @@ public class ExecutionService {
 
         for (int i = 0; i < NUMBER_OF_THREAD; i++) {
             UserThread userThread = new UserThread("user thread " + i,
-                    accountService, accounts, random);
+                    accountService, accounts);
             threads.add(userThread);
             userThread.setOperationsInEachThread(NUMBER_OF_OPERATIONS_IN_EACH_THREAD);
             userThread.start();
